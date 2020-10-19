@@ -1,0 +1,59 @@
+
+.modal-content {
+  background-color: #4e3c55 !important;
+}
+
+.form-control{
+  background-color: #ded2e9 !important;
+}
+
+.dropdown-menu {
+  background-color: #3d3c41 !important;
+}
+
+.dropdown-item:hover {
+  background-color: #3d3c41 !important;
+}
+/*
+.candidateView{
+  max-width: 900px;
+} */
+
+.disabledResume{
+  opacity: 0.4 !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+.modal {
+  padding-bottom: 40px !important;
+}
+
+#postFile {
+  visibility: hidden;
+}
+
+.my-drop-zone {
+  border: dotted 3px lightgray;
+}
+
+.hideId{
+  visibility: hidden !important;
+}
+
+.nv-file-over {
+  border: dotted 3px red;
+} /* Default class applied to drop zones on over */
+
+.another-file-over-class {
+  border: dotted 3px green;
+}
+
+table{
+  width: fit-content !important;
+  margin: auto !important;
+  overflow-y:scroll;
+  overflow-x:scroll;
+  max-height:250px;
+  display:block;
+}

@@ -1,0 +1,457 @@
+<div class="container-fluid center">
+  <div class="row center">
+    <div class="col-md-12" style="display: flex;">
+      <form [formGroup]="searchForm" (submit)="search()" class="center mt-2" style="margin: auto; width: 800px;">
+        <button type="button" class="btn btn-outline-secondary btn-sm mr-5 badge-pill" data-toggle="tooltip"
+        data-placement="auto" title="Switch to" style="float: left;" (click)="switchKendo()"> {{ isKendo ? 'AG-Grid' : 'Kendo-Grid' }}
+      </button>
+        <div class="form-group has-success  has-danger" style="display: flex;">
+          <div style="margin: auto; width: 90%;">
+            <input type="text" class="form-control form-control-sm"
+              placeholder="Search by CandidateID, Name, Email, Phone, Skills, ..." formControlName="search"
+              (ngModelChange)="search()" [ngClass]="
+              searchForm.get('search').errors &&
+              searchForm.get('search').touched ?
+              'is-invalid' : searchForm.get('search').valid ? 'is-valid' : ''
+            ">
+            <div class="invalid-feedback">You can use multiple search seperated by comma, for example: CandidateId, Name, Email, JobID, Skills ...
+            </div>
+          </div>
+          <button type="submit" class="btn btn-outline-primary ml-0 btn-sm" style="max-height: 40px;">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <span class="badge">
+    <button type="button" class="btn btn-outline-info btn-sm" (click)="newCandidate()" data-toggle="tooltip"
+      data-placement="auto" title="Add New Candidate">
+      <fa-icon [icon]="faPlus"></fa-icon>
+    </button>
+  </span>
+  <span class="badge">
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCandidate()" data-toggle="tooltip"
+      data-placement="auto" title="Delete Candidate(s)">
+      <fa-icon [icon]="faTimes"></fa-icon>
+    </button>
+  </span>
+  <span class="badge ml-2">
+    <button type="button" class="btn btn-outline-success btn-sm" style="margin: auto;" (click)="addSubmission()"
+      data-toggle="tooltip" data-placement="auto" title="Add Submissions">
+      <fa-icon [icon]="faUserPlus"></fa-icon>
+    </button>
+  </span>
+  <span class="badge ml-2">
+    <button type="button" class="btn btn-outline-warning btn-sm" style="margin: auto;" (click)="exportData()"
+      data-toggle="tooltip" data-placement="auto" title="Export">
+      <i class="fas fa-file-export"></i>
+    </button>
+  </span>
+  <div class="row center" style="height: 100%; position: relative;" *ngIf="!isKendo">
+    <ag-grid-angular #agGrid style="width: 100%; margin: auto; position: absolute; font: small !important;"
+      [ngStyle]="getTableHeight()" class="ag-theme-alpine" [rowData]="rowData2" [columnDefs]="columnDefs3"
+      rowSelection="multiple" (gridReady)="onGridReady($event)" [suppressHorizontalScroll]=false rowHeight='30'
+      cellHeight='29' [enableSorting]="true" [enableRangeSelection]="true" [pagination]="true" [paginationPageSize]="25"
+      (onGridSizeChanged)="sizeGrid($event)" [statusBar]="true" [pivotPanelShow]="true" [groupIncludeFooter]="true"
+      [domLayout]="domLayout" [groupIncludeTotalFooter]="true">
+    </ag-grid-angular>
+    <div style="color: #ffff; z-index: 100; font-size: small; position: relative; height: 100%;"
+      [ngStyle]="getHeight()">Candidate
+      selected <strong>{{ rowCount }}</strong>
+      <button type="button" class="btn btn-outline-success ml-4 btn-sm ml-3" style="margin: auto;"
+        (click)="addSubmission()" data-toggle="tooltip" data-placement="auto" title="Add Submissions">
+        <fa-icon [icon]="faUserPlus"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="row center" style="height: 100%; position: relative;" *ngIf="isKendo">
+    <kendo-grid #kGrid id="kGrid" style="color: #656565 !important;" [data]="gridView"
+    [ngStyle]="getTableHeight()" [navigable]="true" [reorderable]="true"
+    [resizable]="true" [height]="480" [selectable]="{enabled: true, checkboxOnly: true}" [columnMenu]="{ filter: true }"
+    [resizable]="true" [sortable]="{
+              allowUnsort: true,
+              mode: 'single'
+              }" [sort]="sort" (sortChange)="sortChange($event)" [kendoGridBinding]="rowData" [pageSize]="pageSize"
+    [skip]="skip" [pageable]="{
+      buttonCount: 4,
+      info: true,
+      previousNext: true
+  }" (pageChange)="onPageChange($event)"
+  kendoGridSelectBy="_id"
+  [selectedKeys]="mySelection">
+    <kendo-grid-checkbox-column width="50">
+      <ng-template kendoGridCellTemplate let-idx="rowIndex">
+        <input [kendoGridSelectionCheckbox]="idx" />
+      </ng-template>
+    </kendo-grid-checkbox-column>
+    <kendo-grid-command-column>
+      <ng-template kendoGridCellTemplate let-dataItem>
+        <button (click)="editCandidate(dataItem)" class="btn btn-outline-warning" style="font: small; height: 29px; font-size: 12px; width: 100%; margin: auto; color: black" data-toggle="tooltip" data-placement="auto" title="Edit Candidate">Edit</button>
+      </ng-template>
+    </kendo-grid-command-column>
+    <kendo-grid-column field="_id" title="#">
+      <ng-template kendoGridCellTemplate let-dataItem>
+        <button (click)="onViewDetails(dataItem)" class="btn btn-outline-success" style="font: small; height: 29px; font-size: 12px; width: 100%; border-color: lime; margin: auto; color: black" data-toggle="tooltip" data-placement="auto" title="View Candidate">View</button>
+      </ng-template>
+    </kendo-grid-column>
+    <kendo-grid-column field="fullName" title="Name">
+    </kendo-grid-column>
+    <kendo-grid-column field="nic" title="NIC">
+    </kendo-grid-column>
+    <kendo-grid-column field="email" title="Email">
+    </kendo-grid-column>
+    <kendo-grid-column field="phone" title="Phone">
+    </kendo-grid-column>
+    <kendo-grid-column field="skills" title="Skills">
+    </kendo-grid-column>
+    <kendo-grid-column field="languages" title="Languages">
+    </kendo-grid-column>
+    <kendo-grid-column field="certifications" title="Certifications">
+    </kendo-grid-column>
+    <kendo-grid-column field="experience" title="Experience">
+    </kendo-grid-column>
+    <kendo-grid-column field="jobs" title="Jobs">
+      <ng-template kendoGridCellTemplate let-dataItem>
+      <button (click)="onJobsClick(dataItem)" class="btn btn-outline-warning" style="font: small; height: 29px; font-size: 12px; width: 100%; margin: auto; color: black" data-toggle="tooltip" data-placement="auto" title="View Candidates">{{ dataItem.jobs.length - 1 }}</button>
+    </ng-template>
+    </kendo-grid-column>
+    <kendo-grid-column field="url" title="Resume">
+      <ng-template kendoGridCellTemplate let-dataItem>
+        <a *ngIf="dataItem.url !== 'null'" href= {{dataItem.url}} target="_blank" class="btn btn-info" style="font: small;  height: 29px; font-size: 12px; margin: auto; text-align: center" data-toggle="tooltip" data-placement="auto" title="View Resume">Resume</a>
+        <div *ngIf="dataItem.url === 'null'" class="disabledResume"><a class="btn btn-info disabledResume" style="font: small; font-size: 12px; height: 29px; color: darkgrey; margin: auto; text-align: center opacity: 0.4 !important; cursor: default !important; pointer-events: none !important;">Resume</a></div>
+      </ng-template>
+    </kendo-grid-column>
+    <ng-template kendoPagerTemplate let-totalPages="totalPages" let-currentPage="currentPage">
+      <kendo-pager-prev-buttons></kendo-pager-prev-buttons>
+      <!-- <kendo-slider [showButtons]="false" tickPlacement="none" [max]="totalPages" [min]="1"
+        (valueChange)="sliderChange($event)" [value]="currentPage">
+      </kendo-slider> -->
+      <kendo-pager-info></kendo-pager-info>
+      <kendo-pager-next-buttons></kendo-pager-next-buttons>
+      <kendo-pager-page-sizes [pageSizes]="pageSizes"></kendo-pager-page-sizes>
+    </ng-template>
+  </kendo-grid>
+    <!-- <div style="color: #ffff; z-index: 100; font-size: small; position: relative; height: 100%;"
+      [ngStyle]="getHeight()">Jobs
+      selected <strong>{{ rowCount }}</strong>
+      <button type="button" class="btn btn-outline-success ml-4 btn-sm ml-3" style="margin: auto;"
+        (click)="addSubmission()" data-toggle="tooltip" data-placement="auto" title="Add Submissions">
+        <fa-icon [icon]="faUserPlus"></fa-icon>
+      </button>
+    </div> -->
+  </div>
+
+  <div class="modal fade bd-example-modal-lg mt-5 mb-5 text-center" id="newCandidate" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h3 class="modal-title text-center" style="color: thistle; flex: auto;">{{!editJobMode? 'New Candidate' : 'Edit Candidate'}}</h3>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <form [formGroup]="newCandidateForm" (submit)="onNewCandidate()" class="center"
+            style="margin: auto; width: 80%; padding: 20px;">
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;"  *ngIf="editJobMode">
+                <label for="createdBy" style="color: aliceblue; width: 100px;">ID: </label>
+                <input  type="text" class="form-control" disabled placeholder="Candidate ID" formControlName="_id" [ngClass]="
+                !editJobMode ? 'hideId' : ''">
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="createdBy" style="color: aliceblue; width: 100px;">Full-Name: </label>
+                <input type="text" class="form-control" placeholder="Full Name"
+                  formControlName="fullName" [ngClass]="
+                newCandidateForm.get('fullName').errors &&
+                newCandidateForm.get('fullName').touched ?
+                'is-invalid' : newCandidateForm.get('fullName').valid ? 'is-valid' : ''
+              ">
+                <!-- <div class="invalid-feedback">Sorry, name is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="nic" style="color: aliceblue; width: 100px;">NIC: </label>
+                <input type="text" class="form-control" placeholder="Identification Number"
+                  formControlName="nic" [ngClass]="
+                newCandidateForm.get('nic').errors &&
+                newCandidateForm.get('nic').touched ?
+                'is-invalid' : newCandidateForm.get('nic').valid ? 'is-valid' : ''
+              ">
+                <!-- <div class="invalid-feedback">Sorry, name is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="email" style="color: aliceblue; width: 100px;">Email: </label>
+                <input type="text" class="form-control" placeholder="Email"
+                  formControlName="email" [ngClass]="
+                newCandidateForm.get('email').errors &&
+                newCandidateForm.get('email').touched ?
+                'is-invalid' : newCandidateForm.get('email').valid ? 'is-valid' : ''
+              ">
+                <!-- <div class="invalid-feedback">Sorry, email is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="phone" style="color: aliceblue; width: 100px;">Phone: </label>
+                <input type="text" class="form-control" placeholder="Phone"
+                  formControlName="phone" [ngClass]="
+                newCandidateForm.get('phone').errors &&
+                newCandidateForm.get('phone').touched ?
+                'is-invalid' : newCandidateForm.get('phone').valid ? 'is-valid' : ''
+              ">
+                <!-- <div class="invalid-feedback">Sorry, phone is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="skills" style="color: aliceblue; width: 100px;">Skills: </label>
+                <textarea rows="3" class="form-control ml-2"
+                  placeholder="Skills seperated by comma, skill #1, skill #2,..." formControlName="skills" [ngClass]="
+                  newCandidateForm.get('skills').errors &&
+                  newCandidateForm.get('skills').touched ?
+                'is-invalid' : newCandidateForm.get('skills').valid ? 'is-valid' : ''
+              "></textarea>
+                <!-- <div class="invalid-feedback">Sorry, skills is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="languages" style="color: aliceblue; width: 100px;">Languaje: </label>
+                <textarea rows="3" class="form-control ml-2"
+                  placeholder="Languages seperated by comma, language #1, language #2,..." formControlName="languages" [ngClass]="
+                  newCandidateForm.get('languages').errors &&
+                  newCandidateForm.get('languages').touched ?
+                'is-invalid' : newCandidateForm.get('languages').valid ? 'is-valid' : ''
+              "></textarea>
+                <!-- <div class="invalid-feedback">Sorry, skills is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="certifications" style="color: aliceblue; width: 100px;">Certifications: </label>
+                <textarea rows="3" class="form-control ml-2"
+                  placeholder="Certifications seperated by comma, certifications #1, certifications #2,..." formControlName="certifications" [ngClass]="
+                  newCandidateForm.get('certifications').errors &&
+                  newCandidateForm.get('certifications').touched ?
+                'is-invalid' : newCandidateForm.get('certifications').valid ? 'is-valid' : ''
+              "></textarea>
+                <!-- <div class="invalid-feedback">Sorry, skills is required</div> -->
+              </div>
+
+              <div class="form-group has-success has-danger mt-1" style="white-space:nowrap; display: flex;">
+                <label for="experience" style="color: aliceblue; width: 100px;">Experience: </label>
+                <textarea rows="3" class="form-control ml-2"
+                  placeholder="Experience seperated by comma, experience #1, experience #2,..." formControlName="experience" [ngClass]="
+                  newCandidateForm.get('experience').errors &&
+                  newCandidateForm.get('experience').touched ?
+                'is-invalid' : newCandidateForm.get('experience').valid ? 'is-valid' : ''
+              "></textarea>
+                <!-- <div class="invalid-feedback">Sorry, skills is required</div> -->
+              </div>
+
+              <form [formGroup]="uploadImgForm" (submit)="onNewCandidate()">
+                <div *ngIf="editJobMode">
+                  <a class="btn btn-outline-success" href="{{prev.url}}" target="_blank" type="button" style="float: right;" [ngClass]="prev.url==='null'? 'disabledResume' : ''">View Current Resume</a>
+                </div>
+                <div>
+                  <button class="btn btn-outline-primary" type="button" (click)="filePicker2.click()">Pick New Resume</button>
+                  <input id="postFile" type="file" #filePicker2 (change)="onResumePicked($event)" accept=".pdf,.doc,.docx">
+                </div>
+              </form>
+              <br>
+              <button mat-raised-button class="btn btn-outline-success" [disabled]="!this.newCandidateForm.valid" type="submit">Save</button>
+              <button type="button" class="btn btn-outline-secondary ml-3" data-dismiss="modal">Cancel</button>
+            </form>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade bd-example-modal-xl mt-5 mb-5 text-center" id="viewJobs" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h3 class="modal-title text-center" style="color: thistle; flex: auto;">Submissions Details</h3>
+          <h4 class="modal-title text-center" style="color: thistle; flex: auto;">For Candidate: {{ prev?.fullName || '' }} </h4>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form class="center mt-4"
+          style="margin: auto; width: 95%; padding: 2px;">
+          <div class="form-group">
+            <ag-grid-angular #agGrid2 style="width: 99%; height: 400px; margin: auto;" class="ag-theme-alpine"
+              [rowData]="rowData3" [columnDefs]="columnDefs" rowSelection="multiple"
+              (gridReady)="onGridReady2($event)"
+              [suppressHorizontalScroll]=false
+              [enableSorting]="true"
+              [enableRangeSelection]="true"
+              [pagination]="true"
+              [paginationPageSize]="25">
+            </ag-grid-angular>
+          </div>
+          <br>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade bd-example-modal-xl mt-5 mb-5" id="viewCandidateDetails" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h3 class="modal-title text-center" style="color: thistle; flex: auto;">Candidate Details</h3>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form class="center mt-4"
+          style="margin: auto; width: 95%; padding: 2px;">
+          <div class="card border-warning mb-3" style="width: 100%;">
+            <div class="card-header"><strong>Candidate ID: {{ toViewCandidate._id }} </strong></div>
+            <div class="card-body">
+              <h4 class="card-title">{{ toViewCandidate.fullName }}</h4>
+              <h5>Email: {{ toViewCandidate.email }}</h5><br>
+              <div class="row">
+                <div class="col-md-8">
+                  <h6>NIC: {{ toViewCandidate.nic }}</h6>
+                  <h6>Phone: {{ toViewCandidate.phone }}</h6>
+                  <h6>Skills: {{ toViewCandidate.skills }} </h6><br>
+                  <h6>Languages: {{ toViewCandidate.languages }} </h6><br>
+                  <h6>Certifications: {{ toViewCandidate.certifications }} </h6><br>
+                  <h6>Experience: {{ toViewCandidate.experience }} </h6><br>
+                  <h6>Submissions: {{ toViewCandiateJobs.length }}</h6>
+                </div>
+                <div class="col-md-2 center">
+                  <div class="center"><a href="{{ toViewCandidate.url }}" target="_blank" class="btn btn-info" style="margin: auto; text-align: center" data-toggle="tooltip" data-placement="auto" title="View Resume" [ngClass]="toViewCandidate.url==='null'? 'disabledResume' : ''">Resume</a></div>
+                </div>
+              </div>
+              <div class="row" *ngIf="toViewCandiateJobs.length > 0">
+                <div class="col-md-12">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Updated At</th>
+                        <th scope="col">Manager</th>
+                        <th scope="col">Created By</th>
+                        <th scope="col">Created At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="table-active" *ngFor="let job of toViewCandiateJobs">
+                        <td>{{ job.id }}</td>
+                        <td>{{ job.title }}</td>
+                        <td>{{ job.status }}</td>
+                        <td>{{ job.updatedAt }}</td>
+                        <td>{{ job.manager }}</td>
+                        <td>{{ job.createdBy }}</td>
+                        <td>{{ job.createdAt }}</td>
+                      </tr>
+                      </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="text-center">
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade bd-example-modal-xl mt-5 mb-5 text-center" id="viewSubs" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl candidateView">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h3 class="modal-title text-center" style="color: thistle; flex: auto;">Add Submissions</h3>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <form [formGroup]="searchSubsForm" (submit)="searchSubs()" class="text-center mt-4"
+              style="margin: auto; width: 95%; padding: 2px;">
+              <div class="form-group has-success has-danger text-center"
+                style="display: flex; margin: auto; place-content: center;">
+                <input type="text" class="form-control form-control-sm" style="width: 50%;"
+                  placeholder="Search Jobs by ID, Title, Team, Date, Skills, ...." formControlName="search"
+                  (ngModelChange)="searchSubs()" [ngClass]="
+                  searchSubsForm.get('search').errors &&
+                  searchSubsForm.get('search').touched ?
+                  'is-invalid' : searchSubsForm.get('search').valid ? 'is-valid' : ''
+                ">
+                <div style="white-space:nowrap; display: flex;">
+                  <button type="submit" class="btn btn-outline-primary btn-sm ml-2"
+                    style="max-height: 40px;">Search</button>
+                    <h6 class="ml-2 mr-2" style="color: thistle; padding-top: 5px;">OR TRY</h6>
+                    <button type="button" class="btn btn-outline-warning" (click)="autoMatch()" data-toggle="tooltip"
+                    data-placement="auto" title="Auto match jobs based on selected candidates skills">
+                    <fa-icon [icon]="faUserCog"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <div style="display: flex;">
+                  <h6 class="mt-2" style="color: white; text-align: start;">Please select Jobs:</h6>
+                  <div class="alert alert-danger mt-2" style="width:fit-content; height:fit-content; margin: auto; padding: auto !important; font-size: 12px;" *ngIf="noMatch">
+                    It looks like the job(s) you are searching for is/are already selected!.
+                  </div>
+                </div>
+                <ag-grid-angular #agGrid3 style="width: 99%; height: 350px; margin: auto; margin-top: 10px;"
+                  class="ag-theme-alpine" rowHeight='30' cellHeight='29' [rowData]="rowData" [columnDefs]="columnDefs2"
+                  rowSelection="multiple" (gridReady)="onGridReady3($event)" [suppressHorizontalScroll]=false
+                  [enableSorting]="true" [enableRangeSelection]="true" [pagination]="true" [paginationPageSize]="25">
+                </ag-grid-angular>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-2" style="align-self: center;">
+            <h4 style="color: thistle;">Selected Jobs:</h4>
+          </div>
+          <div class="col-md-10">
+            <ag-grid-angular #agGrid4 style="width: 99%; height: 250px; margin: auto; margin-top: 10px;"
+              class="ag-theme-alpine" rowHeight='30' cellHeight='29' [rowData]="rowData4" [columnDefs]="columnDefs4"
+              rowSelection="multiple" (gridReady)="onGridReady4($event)" [suppressHorizontalScroll]=false
+              [enableSorting]="true" [enableRangeSelection]="true" [pagination]="true" [paginationPageSize]="25">
+            </ag-grid-angular>
+            <div style="color: #ffff; z-index: 100; font-size: small;">Jobs selected({{ candidateCount }})</div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-md-2" style="align-self: center;">
+            <h4 style="color: thistle;">Selected Candidates:</h4>
+          </div>
+          <div class="col-md-10">
+            <ag-grid-angular #agGrid5 style="width: 99%; height: 250px; margin: auto; margin-top: 10px;"
+              class="ag-theme-alpine" rowHeight='30' cellHeight='29' [rowData]="rowData5" [columnDefs]="columnDefs5"
+              rowSelection="multiple" (gridReady)="onGridReady5($event)" [suppressHorizontalScroll]=false
+              [enableSorting]="true" [enableRangeSelection]="true" [pagination]="true" [paginationPageSize]="25">
+            </ag-grid-angular>
+          </div>
+        </div>
+        <hr>
+        <form class="text-center" style="margin: auto; width: 95%; padding: 2px;">
+          <button type="button" class="btn btn-outline-success" (click)="onAddSubs()">Add Submissions</button>
+          <button type="button" class="btn btn-outline-secondary ml-3" data-dismiss="modal">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+

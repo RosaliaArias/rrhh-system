@@ -1,0 +1,88 @@
+<div class="container">
+  <div class="row mt-5 center">
+    <div class="col-md-3">
+      <div
+        class="card text-white bg-warning mb-3 mt-5"
+        style="max-width: 20rem"
+      >
+        <div class="card-header"></div>
+        <div class="card-body">
+          <h4 class="card-title">Antes de empezar!</h4>
+          <p class="card-text">
+            Este sistema corresponde al trabajo final de la materia de
+            programación. Básicamente se trata de un software para gestionar el
+            reclutamiento de posicioes tecnológicas.<br />
+            <strong style="color: red">IMPORTANTE </strong> El sistema fue
+            desarrollado con el MEAN Stack.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9 center">
+      <form
+        [formGroup]="signInForm"
+        (submit)="onSigningIn()"
+        class="center mt-5"
+        style="margin: auto; width: 350px"
+      >
+        <div
+          class="card text-white bg-warning mb-3"
+          style="max-width: 20rem; background-color: orangered !important"
+        >
+          <div class="card-header"></div>
+          <div class="card-body">
+            <p class="card-text">
+              Para iniciar sesión, utilice las siguientes credenciales:<br /><strong
+                >Usuario:
+              </strong>
+              admin@rrhh-system.com<br />
+              <strong>Contraseña: </strong> password
+            </p>
+          </div>
+        </div>
+        <div class="form-group has-success has-danger">
+          <input
+            style="width: 300px"
+            type="text"
+            class="form-control"
+            placeholder="Nombre de usuario"
+            formControlName="email"
+            [ngClass]="
+              signInForm.get('email').errors && signInForm.get('email').touched
+                ? 'is-invalid'
+                : signInForm.get('email').valid
+                ? 'is-valid'
+                : ''
+            "
+          />
+          <div class="invalid-feedback">
+            Sorry, username should be a valid email
+          </div>
+        </div>
+
+        <div class="form-group has-success has-danger">
+          <input
+            style="width: 300px"
+            type="password"
+            class="form-control"
+            placeholder="Contraseña"
+            formControlName="password"
+            [ngClass]="
+              signInForm.get('password').errors &&
+              signInForm.get('password').touched
+                ? 'is-invalid'
+                : signInForm.get('password').valid
+                ? 'is-valid'
+                : ''
+            "
+          />
+          <div class="invalid-feedback">Ups, contraseña incorrecta</div>
+        </div>
+        <br />
+        <button mat-raised-button class="btn btn-success" type="submit">
+          Entrar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
